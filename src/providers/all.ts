@@ -24,7 +24,6 @@ import { remotestreamScraper } from '@/providers/sources/remotestream';
 import { showboxScraper } from '@/providers/sources/showbox/index';
 import { tugaflixScraper } from '@/providers/sources/tugaflix';
 import { vidsrcScraper } from '@/providers/sources/vidsrc/index';
-import { mirrorsScraper } from '@/providers/sources/whvxMirrors';
 import { zoechipScraper } from '@/providers/sources/zoechip';
 
 import {
@@ -54,8 +53,6 @@ import { vidplayScraper } from './embeds/vidplay';
 import { voeScraper } from './embeds/voe';
 import { warezcdnembedHlsScraper } from './embeds/warezcdn/hls';
 import { warezcdnembedMp4Scraper } from './embeds/warezcdn/mp4';
-import { astraScraper, novaScraper, orionScraper } from './embeds/whvx';
-import { amznScraper, ntflxScraper } from './embeds/whvxMirrors';
 import { wootlyScraper } from './embeds/wootly';
 import { autoembedScraper } from './sources/autoembed';
 import { catflixScraper } from './sources/catflix';
@@ -73,7 +70,6 @@ import { smashyStreamScraper } from './sources/smashystream';
 import { soaperTvScraper } from './sources/soapertv';
 import { vidSrcToScraper } from './sources/vidsrcto';
 import { warezcdnScraper } from './sources/warezcdn';
-import { whvxScraper } from './sources/whvx';
 
 export function gatherAllSources(): Array<Sourcerer> {
   // all sources are gathered here
@@ -142,9 +138,6 @@ export function gatherAllEmbeds(): Array<Embed> {
     playm4uNMScraper,
     hydraxScraper,
     vidMolyScraper,
-    novaScraper,
-    astraScraper,
-    orionScraper,
     smashyStreamFScraper,
     smashyStreamOScraper,
     turbovidScraper,
@@ -156,7 +149,5 @@ export function gatherAllEmbeds(): Array<Embed> {
     vidkerScraper,
     streamwishScraper,
     doodScraper,
-    amznScraper,
-    ntflxScraper,
   ];
 }
