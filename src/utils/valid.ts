@@ -1,11 +1,9 @@
 import { doodScraper } from '@/providers/embeds/dood';
-import { novaScraper } from '@/providers/embeds/nova';
 import { alphaScraper, deltaScraper } from '@/providers/embeds/nsbx';
 import { playm4uNMScraper } from '@/providers/embeds/playm4u/nm';
 import { streamTapeScraper } from '@/providers/embeds/streamtape';
 import { upstreamScraper } from '@/providers/embeds/upstream';
 import { warezcdnembedMp4Scraper } from '@/providers/embeds/warezcdn/mp4';
-import { astraScraper } from '@/providers/embeds/whvx';
 import { soaperTvScraper } from '@/providers/sources/soapertv';
 import { vidSrcToScraper } from '@/providers/sources/vidsrcto';
 import { Stream } from '@/providers/streams';
@@ -19,9 +17,7 @@ const SKIP_VALIDATION_CHECK_IDS = [
   alphaScraper.id,
   deltaScraper.id,
   vidSrcToScraper.id,
-  astraScraper.id,
   streamTapeScraper.id,
-  novaScraper.id,
   playm4uNMScraper.id,
   soaperTvScraper.id,
 ];
