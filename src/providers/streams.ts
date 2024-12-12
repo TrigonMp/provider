@@ -30,6 +30,7 @@ export type FileBasedStream = StreamCommon & {
 export type HlsBasedStream = StreamCommon & {
   type: 'hls';
   playlist: string;
+  proxyDepth?: 0 | 1 | 2;
 };
 
 export type Stream = FileBasedStream | HlsBasedStream;

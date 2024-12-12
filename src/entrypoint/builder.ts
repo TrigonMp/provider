@@ -1,5 +1,5 @@
 import { ProviderControls, makeControls } from '@/entrypoint/controls';
-import { getBuiltinEmbeds, getBuiltinSources } from '@/entrypoint/providers';
+import { getBuiltinEmbeds, getBuiltinExternalSources, getBuiltinSources } from '@/entrypoint/providers';
 import { Targets, getTargetFeatures } from '@/entrypoint/utils/targets';
 import { Fetcher } from '@/fetchers/types';
 import { Embed, Sourcerer } from '@/providers/base';
@@ -26,6 +26,7 @@ export function buildProviders(): ProviderBuilder {
   const embeds: Embed[] = [];
   const sources: Sourcerer[] = [];
   const builtinSources = getBuiltinSources();
+  const builtinExternalSources = getBuiltinExternalSources();
   const builtinEmbeds = getBuiltinEmbeds();
 
   return {
@@ -51,7 +52,7 @@ export function buildProviders(): ProviderBuilder {
         return this;
       }
 
-      const matchingSource = builtinSources.find((v) => v.id === input);
+      const matchingSource = [...builtinSources, ...builtinExternalSources].find((v) => v.id === input);
       if (!matchingSource) throw new Error('Source not found');
       sources.push(matchingSource);
       return this;

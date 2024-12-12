@@ -9,6 +9,10 @@ export const flags = {
   // The source/embed is blocking cloudflare ip's
   // This flag is not compatible with a proxy hosted on cloudflare
   CF_BLOCKED: 'cf-blocked',
+
+  // Streams and sources with this flag wont be proxied
+  // And will be exclusive to the extension
+  PROXY_BLOCKED: 'proxy-blocked',
 } as const;
 
 export type Flags = (typeof flags)[keyof typeof flags];
@@ -53,9 +57,14 @@ export const targetToFeatures: Record<Targets, FeatureMap> = {
   },
 };
 
-export function getTargetFeatures(target: Targets, consistentIpForRequests: boolean): FeatureMap {
+export function getTargetFeatures(
+  target: Targets,
+  consistentIpForRequests: boolean,
+  proxyStreams?: boolean,
+): FeatureMap {
   const features = targetToFeatures[target];
   if (!consistentIpForRequests) features.disallowed.push(flags.IP_LOCKED);
+  if (proxyStreams) features.disallowed.push(flags.PROXY_BLOCKED);
   return features;
 }
 

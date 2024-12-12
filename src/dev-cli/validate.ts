@@ -82,6 +82,7 @@ export async function processOptions(sources: Array<Embed | Sourcerer>, options:
     fetcher,
     target: targets.ANY,
     consistentIpForRequests: true,
+    externalSources: 'all',
   };
 
   return {

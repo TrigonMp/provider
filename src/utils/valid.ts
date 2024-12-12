@@ -1,6 +1,18 @@
+import { alphaScraper, deltaScraper } from '@/providers/embeds/nsbx';
+import { warezcdnembedMp4Scraper } from '@/providers/embeds/warezcdn/mp4';
+import { astraScraper, novaScraper, orionScraper } from '@/providers/embeds/whvx';
 import { Stream } from '@/providers/streams';
 import { IndividualEmbedRunnerOptions } from '@/runners/individualRunner';
 import { ProviderRunnerOptions } from '@/runners/runner';
+
+const SKIP_VALIDATION_CHECK_IDS = [
+  warezcdnembedMp4Scraper.id,
+  deltaScraper.id,
+  alphaScraper.id,
+  novaScraper.id,
+  astraScraper.id,
+  orionScraper.id,
+];
 
 export function isValidStream(stream: Stream | undefined): boolean {
   if (!stream) return false;
@@ -21,8 +33,14 @@ export function isValidStream(stream: Stream | undefined): boolean {
 export async function validatePlayableStream(
   stream: Stream,
   ops: ProviderRunnerOptions | IndividualEmbedRunnerOptions,
+  sourcererId: string,
 ): Promise<Stream | null> {
+  if (SKIP_VALIDATION_CHECK_IDS.includes(sourcererId)) return stream;
+
   if (stream.type === 'hls') {
+    // dirty temp fix for base64 urls to prep for fmhy poll
+    if (stream.playlist.startsWith('data:')) return stream;
+
     const result = await ops.proxiedFetcher.full(stream.playlist, {
       method: 'GET',
       headers: {
@@ -63,8 +81,11 @@ export async function validatePlayableStream(
 export async function validatePlayableStreams(
   streams: Stream[],
   ops: ProviderRunnerOptions | IndividualEmbedRunnerOptions,
+  sourcererId: string,
 ): Promise<Stream[]> {
-  return (await Promise.all(streams.map((stream) => validatePlayableStream(stream, ops)))).filter(
+  if (SKIP_VALIDATION_CHECK_IDS.includes(sourcererId)) return streams;
+
+  return (await Promise.all(streams.map((stream) => validatePlayableStream(stream, ops, sourcererId)))).filter(
     (v) => v !== null,
   ) as Stream[];
 }

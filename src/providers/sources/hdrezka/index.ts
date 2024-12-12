@@ -6,7 +6,7 @@ import { NotFoundError } from '@/utils/errors';
 import { MovieData, VideoLinks } from './types';
 import { extractTitleAndYear, generateRandomFavs, parseSubtitleLinks, parseVideoLinks } from './utils';
 
-const rezkaBase = 'https://hdrzk.org';
+const rezkaBase = 'https://hdrezka.ag/';
 const baseHeaders = {
   'X-Hdrezka-Android-App': '1',
   'X-Hdrezka-Android-App-Version': '2.2.0',

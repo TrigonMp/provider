@@ -19,6 +19,9 @@ export type SourcererOptions = {
   name: string; // displayed in the UI
   rank: number; // the higher the number, the earlier it gets put on the queue
   disabled?: boolean;
+  // these sources are built in but not used by default
+  // this can have many uses, we use this for sources that only work on official instances
+  externalSource?: boolean;
   flags: Flags[];
   scrapeMovie?: (input: MovieScrapeContext) => Promise<SourcererOutput>;
   scrapeShow?: (input: ShowScrapeContext) => Promise<SourcererOutput>;
@@ -27,6 +30,7 @@ export type SourcererOptions = {
 export type Sourcerer = SourcererOptions & {
   type: 'source';
   disabled: boolean;
+  externalSource: boolean;
   mediaTypes: MediaScraperTypes[];
 };
 
@@ -38,6 +42,7 @@ export function makeSourcerer(state: SourcererOptions): Sourcerer {
     ...state,
     type: 'source',
     disabled: state.disabled ?? false,
+    externalSource: state.externalSource ?? false,
     mediaTypes,
   };
 }

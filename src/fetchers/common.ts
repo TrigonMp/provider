@@ -15,7 +15,11 @@ export function makeFullUrl(url: string, ops?: FullUrlOptions): string {
   if (rightSide.startsWith('/')) rightSide = rightSide.slice(1);
 
   const fullUrl = leftSide + rightSide;
-  if (!fullUrl.startsWith('http://') && !fullUrl.startsWith('https://'))
+
+  // we need the data scheme for base64 encoded hls playlists
+  // this is for playlists that themselves have cors but not their parts
+  // this allows us to proxy them, encode them into base64 and then fetch the parts normally
+  if (!fullUrl.startsWith('http://') && !fullUrl.startsWith('https://') && !fullUrl.startsWith('data:'))
     throw new Error(`Invald URL -- URL doesn't start with a http scheme: '${fullUrl}'`);
 
   const parsedUrl = new URL(fullUrl);
@@ -35,6 +39,7 @@ export function makeFetcher(fetcher: Fetcher): UseableFetcher {
       baseUrl: ops?.baseUrl ?? '',
       readHeaders: ops?.readHeaders ?? [],
       body: ops?.body,
+      credentials: ops?.credentials,
     });
   };
   const output: UseableFetcher = async (url, ops) => (await newFetcher(url, ops)).body;

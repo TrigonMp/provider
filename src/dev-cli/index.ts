@@ -7,7 +7,7 @@ import { prompt } from 'enquirer';
 import { runScraper } from '@/dev-cli/scraper';
 import { processOptions } from '@/dev-cli/validate';
 
-import { getBuiltinEmbeds, getBuiltinSources } from '..';
+import { getBuiltinEmbeds, getBuiltinExternalSources, getBuiltinSources } from '..';
 
 dotenv.config();
 
@@ -30,7 +30,7 @@ type ShowAnswers = {
   episode: string;
 };
 
-const sourceScrapers = getBuiltinSources().sort((a, b) => b.rank - a.rank);
+const sourceScrapers = [...getBuiltinSources(), ...getBuiltinExternalSources()].sort((a, b) => b.rank - a.rank);
 const embedScrapers = getBuiltinEmbeds().sort((a, b) => b.rank - a.rank);
 const sources = [...sourceScrapers, ...embedScrapers];
 

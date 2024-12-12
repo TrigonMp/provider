@@ -54,6 +54,15 @@ async function getStreams(title: string) {
         case 'dood.watch':
           embedId = 'dood';
           break;
+        case 'dropload.io':
+          embedId = 'dropload';
+          break;
+        case 'filelions.to':
+          embedId = 'filelions';
+          break;
+        case 'vtube.to':
+          embedId = 'vtube';
+          break;
         default:
           embedId = null;
       }
@@ -71,7 +80,8 @@ async function getStreams(title: string) {
 export const primewireScraper = makeSourcerer({
   id: 'primewire',
   name: 'Primewire',
-  rank: 110,
+  rank: 1,
+  disabled: true,
   flags: [flags.CORS_ALLOWED],
   async scrapeMovie(ctx) {
     if (!ctx.media.imdbId) throw new Error('No imdbId provided');

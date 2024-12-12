@@ -7,8 +7,8 @@ import { NotFoundError } from '@/utils/errors';
 
 import { SearchResults } from './types';
 
-const nepuBase = 'https://nepu.to';
-const nepuReferer = `${nepuBase}/`;
+const nepuBase = 'https://nepu.io';
+const nepuReferer = 'https://nepu.to';
 
 const universalScraper = async (ctx: MovieScrapeContext | ShowScrapeContext) => {
   const searchResultRequest = await ctx.proxiedFetcher<string>('/ajax/posts', {
@@ -63,11 +63,11 @@ const universalScraper = async (ctx: MovieScrapeContext | ShowScrapeContext) => 
         captions: [],
         playlist: streamUrl[1],
         type: 'hls',
-        flags: [],
         headers: {
-          Origin: nepuBase,
-          Referer: nepuReferer,
+          Origin: nepuReferer,
+          Referer: `${nepuReferer}/`,
         },
+        flags: [],
       },
     ],
   } as SourcererOutput;
@@ -77,8 +77,8 @@ export const nepuScraper = makeSourcerer({
   id: 'nepu',
   name: 'Nepu',
   rank: 80,
-  flags: [],
   disabled: true,
+  flags: [],
   scrapeMovie: universalScraper,
   scrapeShow: universalScraper,
 });
