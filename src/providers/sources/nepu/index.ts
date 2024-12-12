@@ -1,7 +1,5 @@
-/* eslint-disable no-console */
 import { load } from 'cheerio';
 
-import { flags } from '@/entrypoint/utils/targets';
 import { SourcererOutput, makeSourcerer } from '@/providers/base';
 import { compareTitle } from '@/utils/compare';
 import { MovieScrapeContext, ShowScrapeContext } from '@/utils/context';
@@ -9,8 +7,8 @@ import { NotFoundError } from '@/utils/errors';
 
 import { SearchResults } from './types';
 
-const nepuBase = 'https://rar.to';
-const nepuReferer = 'https://nepu.to';
+const nepuBase = 'https://nepu.to';
+const nepuReferer = `${nepuBase}/`;
 
 const universalScraper = async (ctx: MovieScrapeContext | ShowScrapeContext) => {
   const searchResultRequest = await ctx.proxiedFetcher<string>('/ajax/posts', {
@@ -26,9 +24,9 @@ const universalScraper = async (ctx: MovieScrapeContext | ShowScrapeContext) => 
   const show = searchResult.data.find((item) => {
     if (!item) return false;
     if (ctx.media.type === 'movie' && item.type !== 'Movie') return false;
-    if (ctx.media.type === 'show' && item.type !== 'Show') return false;
+    if (ctx.media.type === 'show' && item.type !== 'Serie') return false;
 
-    return compareTitle(ctx.media.title, item.second_name);
+    return compareTitle(ctx.media.title, item.name);
   });
 
   if (!show) throw new NotFoundError('No watchable item found');
@@ -52,31 +50,10 @@ const universalScraper = async (ctx: MovieScrapeContext | ShowScrapeContext) => 
     baseUrl: nepuBase,
     body: new URLSearchParams({ id: embedId }),
   });
-  const headers = {
-    referer: nepuReferer,
-    origin: nepuReferer,
-  };
-  const headersString = JSON.stringify(headers);
-  // Extract the part inside the <script> tags
-  const jsonMatch = playerPage.match(/file:\s*(\[\{.*\}\])/);
-  if (!jsonMatch) throw new NotFoundError('Failed to find file');
 
-  let jsonString = jsonMatch[1];
-  jsonString = jsonString.replace(/(\w+):/g, '"$1":');
-  jsonString = jsonString.replace(/:\s*([^"[{]\S+)/g, ':"$1"');
-  jsonString = jsonString.replace(/"https":"\/\//g, '"https://');
-  jsonString = jsonString.replace(/", "/g, '",');
-  jsonString = jsonString.replace(/"\s+/g, '"');
-  jsonString = jsonString.replace(/\s+"/g, '"');
-  jsonString = jsonString.replace(/""https/g, '"https');
-  jsonString = jsonString.replace(/""poster/g, '"poster');
-  jsonString = jsonString.replace(/""/g, '"');
+  const streamUrl = playerPage.match(/"file":"(http[^"]+)"/);
 
-  const fileUrlMatch = jsonString.match(/"file":"([^"]+)"/);
-  if (!fileUrlMatch || !fileUrlMatch[1]) throw new NotFoundError('Failed to find file');
-  console.log('fileUrlMatch:', fileUrlMatch[1]);
-  const proxiedPlaylist = `https://m3u8.wafflehacker.io/m3u8-proxy?url=${encodeURIComponent(fileUrlMatch[1])}&headers=${encodeURIComponent(headersString)}`;
-  console.log('proxiedPlaylist:', proxiedPlaylist);
+  if (!streamUrl) throw new NotFoundError('No stream found.');
 
   return {
     embeds: [],
@@ -84,9 +61,13 @@ const universalScraper = async (ctx: MovieScrapeContext | ShowScrapeContext) => 
       {
         id: 'primary',
         captions: [],
-        playlist: proxiedPlaylist,
+        playlist: streamUrl[1],
         type: 'hls',
-        flags: [flags.CORS_ALLOWED],
+        flags: [],
+        headers: {
+          Origin: nepuBase,
+          Referer: nepuReferer,
+        },
       },
     ],
   } as SourcererOutput;
@@ -95,9 +76,9 @@ const universalScraper = async (ctx: MovieScrapeContext | ShowScrapeContext) => 
 export const nepuScraper = makeSourcerer({
   id: 'nepu',
   name: 'Nepu',
-  rank: 145,
-  disabled: false,
-  flags: [flags.CORS_ALLOWED],
+  rank: 80,
+  flags: [],
+  disabled: true,
   scrapeMovie: universalScraper,
   scrapeShow: universalScraper,
 });

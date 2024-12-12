@@ -39,17 +39,17 @@ async function getStreams(title: string) {
       const sourceName = element.parent().parent().parent().find('.version-host').text().trim();
       let embedId;
       switch (sourceName) {
+        case 'mixdrop.co':
+          embedId = 'mixdrop';
+          break;
+        case 'voe.sx':
+          embedId = 'voe';
+          break;
         case 'upstream.to':
           embedId = 'upstream';
           break;
-        case 'streamwish.to':
-          embedId = 'streamwish';
-          break;
-        case 'vtube.to':
-          embedId = 'vtube';
-          break;
-        case 'vidmoly.me':
-          embedId = 'vidmoly';
+        case 'streamvid.net':
+          embedId = 'streamvid';
           break;
         case 'dood.watch':
           embedId = 'dood';
@@ -71,7 +71,7 @@ async function getStreams(title: string) {
 export const primewireScraper = makeSourcerer({
   id: 'primewire',
   name: 'Primewire',
-  rank: 85,
+  rank: 110,
   flags: [flags.CORS_ALLOWED],
   async scrapeMovie(ctx) {
     if (!ctx.media.imdbId) throw new Error('No imdbId provided');

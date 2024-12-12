@@ -3,7 +3,7 @@ import { makeEmbed } from '@/providers/base';
 import { Caption, getCaptionTypeFromUrl, labelToLanguageCode } from '@/providers/captions';
 
 import { getFileUrl } from './common';
-import { SubtitleResult, ThumbnailTrack, VidplaySourceResponse } from './types';
+import { SubtitleResult, VidplaySourceResponse } from './types';
 
 export const vidplayScraper = makeEmbed({
   id: 'vidplay',
@@ -18,15 +18,6 @@ export const vidplayScraper = makeEmbed({
     });
     if (typeof fileUrlRes.result === 'number') throw new Error('File not found');
     const source = fileUrlRes.result.sources[0].file;
-    const thumbnailSource = fileUrlRes.result.tracks.find((track) => track.kind === 'thumbnails');
-
-    let thumbnailTrack: ThumbnailTrack | undefined;
-    if (thumbnailSource) {
-      thumbnailTrack = {
-        type: 'vtt',
-        url: thumbnailSource.file,
-      };
-    }
 
     const url = new URL(ctx.url);
     const subtitlesLink = url.searchParams.get('sub.info');
@@ -54,13 +45,8 @@ export const vidplayScraper = makeEmbed({
           id: 'primary',
           type: 'hls',
           playlist: source,
-          flags: [flags.PROXY_BLOCKED],
-          headers: {
-            Referer: url.origin,
-            Origin: url.origin,
-          },
+          flags: [flags.CORS_ALLOWED],
           captions,
-          thumbnailTrack,
         },
       ],
     };

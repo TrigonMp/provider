@@ -1,6 +1,9 @@
-import { flags } from '@/entrypoint/utils/targets';
+import { customAlphabet } from 'nanoid';
+
 import { makeEmbed } from '@/providers/base';
-import { NotFoundError } from '@/utils/errors';
+
+const nanoid = customAlphabet('ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789', 10);
+const baseUrl = 'https://d000d.com';
 
 export const doodScraper = makeEmbed({
   id: 'dood',
@@ -13,34 +16,42 @@ export const doodScraper = makeEmbed({
       url = request.finalUrl;
     }
 
-    // Extract ID from URL
-    const urlSegments = url.split('/');
-    const videoId = urlSegments.pop() || urlSegments.pop();
+    const id = url.split('/d/')[1] || url.split('/e/')[1];
 
-    const vidScrapeURL = `https://dood.wafflehacker.io/video/${videoId}`;
-    const vidScrape = await ctx.fetcher(vidScrapeURL);
+    const doodData = await ctx.proxiedFetcher<string>(`/e/${id}`, {
+      method: 'GET',
+      baseUrl,
+    });
 
-    ctx.progress(50);
+    const dataForLater = doodData.match(/\?token=([^&]+)&expiry=/)?.[1];
+    const path = doodData.match(/\$\.get\('\/pass_md5([^']+)/)?.[1];
 
-    if (vidScrape.videoUrl?.length === 0) {
-      throw new NotFoundError('No Video Found');
-    }
+    const doodPage = await ctx.proxiedFetcher<string>(`/pass_md5${path}`, {
+      headers: {
+        Referer: `${baseUrl}/e/${id}`,
+      },
+      method: 'GET',
+      baseUrl,
+    });
+    const downloadURL = `${doodPage}${nanoid()}?token=${dataForLater}&expiry=${Date.now()}`;
 
-    ctx.progress(100);
+    if (!downloadURL.startsWith('http')) throw new Error('Invalid URL');
 
     return {
       stream: [
         {
           id: 'primary',
           type: 'file',
-          disabled: true,
-          flags: [flags.CORS_ALLOWED],
+          flags: [],
           captions: [],
           qualities: {
             unknown: {
               type: 'mp4',
-              url: vidScrape.videoUrl,
+              url: downloadURL,
             },
+          },
+          headers: {
+            Referer: baseUrl,
           },
         },
       ],

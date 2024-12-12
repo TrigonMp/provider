@@ -19,19 +19,13 @@ const universalScraper = async (ctx: MovieScrapeContext | ShowScrapeContext) => 
       q: ctx.media.title,
     },
   });
-  const mediaData = searchResult.data.items.map((movieEl) => {
-    const name = movieEl.title;
-    const year = movieEl.contentable.releaseYear;
-    const fullSlug = movieEl.fullSlug;
-    return { name, year, fullSlug };
-  });
-  const targetMedia = mediaData.find((m) => m.name === ctx.media.title && m.year === ctx.media.releaseYear.toString());
-  if (!targetMedia?.fullSlug) throw new NotFoundError('No watchable item found');
+  const show = searchResult.data.items[0];
+  if (!show) throw new NotFoundError('No watchable item found');
 
-  let iframeSourceUrl = `/${targetMedia.fullSlug}/videos`;
+  let iframeSourceUrl = `/${show.fullSlug}/videos`;
 
   if (ctx.media.type === 'show') {
-    const showPageResult = await ctx.proxiedFetcher<string>(`/${targetMedia.fullSlug}`, {
+    const showPageResult = await ctx.proxiedFetcher<string>(`/${show.fullSlug}`, {
       baseUrl: ridoMoviesBase,
     });
     const fullEpisodeSlug = `season-${ctx.media.season.number}/episode-${ctx.media.episode.number}`;
@@ -75,7 +69,6 @@ export const ridooMoviesScraper = makeSourcerer({
   id: 'ridomovies',
   name: 'RidoMovies',
   rank: 100,
-  disabled: true,
   flags: [flags.CORS_ALLOWED],
   scrapeMovie: universalScraper,
   scrapeShow: universalScraper,

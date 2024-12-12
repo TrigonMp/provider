@@ -1,33 +1,48 @@
 import { flags } from '@/entrypoint/utils/targets';
 import { SourcererOutput, makeSourcerer } from '@/providers/base';
+import { febboxMp4Scraper } from '@/providers/embeds/febbox/mp4';
+import { compareTitle } from '@/utils/compare';
 import { MovieScrapeContext, ShowScrapeContext } from '@/utils/context';
 import { NotFoundError } from '@/utils/errors';
 
+import { sendRequest } from './sendRequest';
+
 async function comboScraper(ctx: ShowScrapeContext | MovieScrapeContext): Promise<SourcererOutput> {
-  let progress = 0;
-  const interval = setInterval(() => {
-    progress += 1;
-    if (progress === 100) throw new NotFoundError('No data found for this show/movie');
-    ctx.progress(progress);
-  }, 100);
+  const searchQuery = {
+    module: 'Search4',
+    page: '1',
+    type: 'all',
+    keyword: ctx.media.title,
+    pagelimit: '20',
+  };
 
-  let url = `https://nsbx.000000077.xyz/vault?tmdbId=${ctx.media.tmdbId}`; // :)
-  if (ctx.media.type === 'show') url += `&season=${ctx.media.season.number}&episode=${ctx.media.episode.number}`;
+  const searchRes = (await sendRequest(ctx, searchQuery, true)).data.list;
+  ctx.progress(50);
 
-  const response = await ctx.fetcher(url);
+  const showboxEntry = searchRes.find(
+    (res: any) => compareTitle(res.title, ctx.media.title) && res.year === Number(ctx.media.releaseYear),
+  );
+  if (!showboxEntry) throw new NotFoundError('No entry found');
 
-  if (response) return response as SourcererOutput;
+  const id = showboxEntry.id;
+  const season = ctx.media.type === 'show' ? ctx.media.season.number : '';
+  const episode = ctx.media.type === 'show' ? ctx.media.episode.number : '';
 
-  clearInterval(interval);
-  throw new NotFoundError('No data found for this show/movie');
+  return {
+    embeds: [
+      {
+        embedId: febboxMp4Scraper.id,
+        url: `/${ctx.media.type}/${id}/${season}/${episode}`,
+      },
+    ],
+  };
 }
 
 export const showboxScraper = makeSourcerer({
   id: 'showbox',
   name: 'Showbox',
   rank: 150,
-  disabled: true,
-  flags: [flags.CORS_ALLOWED],
+  flags: [flags.CORS_ALLOWED, flags.CF_BLOCKED],
   scrapeShow: comboScraper,
   scrapeMovie: comboScraper,
 });

@@ -8,7 +8,6 @@ import { Stream } from '@/providers/streams';
 import { ScrapeContext } from '@/utils/context';
 import { NotFoundError } from '@/utils/errors';
 import { reorderOnIdList } from '@/utils/list';
-import { addOpenSubtitlesCaptions } from '@/utils/opensubtitles';
 import { isValidStream, validatePlayableStream } from '@/utils/valid';
 
 export type RunOutput = {
@@ -105,20 +104,8 @@ export async function runAllProviders(list: ProviderList, ops: ProviderRunnerOpt
 
     // return stream is there are any
     if (output.stream?.[0]) {
-      const playableStream = await validatePlayableStream(output.stream[0], ops, source.id);
+      const playableStream = await validatePlayableStream(output.stream[0], ops);
       if (!playableStream) throw new NotFoundError('No streams found');
-
-      // opensubtitles
-      playableStream.captions = await addOpenSubtitlesCaptions(
-        playableStream.captions,
-        ops,
-        btoa(
-          `${ops.media.imdbId}${
-            ops.media.type === 'show' ? `.${ops.media.season.number}.${ops.media.episode.number}` : ''
-          }`,
-        ),
-      );
-
       return {
         sourceId: source.id,
         stream: playableStream,
@@ -164,19 +151,8 @@ export async function runAllProviders(list: ProviderList, ops: ProviderRunnerOpt
         if (embedOutput.stream.length === 0) {
           throw new NotFoundError('No streams found');
         }
-        const playableStream = await validatePlayableStream(embedOutput.stream[0], ops, embed.embedId);
+        const playableStream = await validatePlayableStream(embedOutput.stream[0], ops);
         if (!playableStream) throw new NotFoundError('No streams found');
-
-        // opensubtitles
-        playableStream.captions = await addOpenSubtitlesCaptions(
-          playableStream.captions,
-          ops,
-          btoa(
-            `${ops.media.imdbId}${
-              ops.media.type === 'show' ? `.${ops.media.season.number}.${ops.media.episode.number}` : ''
-            }`,
-          ),
-        );
         embedOutput.stream = [playableStream];
       } catch (error) {
         const updateParams: UpdateEvent = {

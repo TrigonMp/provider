@@ -1,5 +1,6 @@
-import { load } from 'cheerio';
 import { unpack } from 'unpacker';
+
+import { flags } from '@/entrypoint/utils/targets';
 
 import { SubtitleResult } from './types';
 import { makeEmbed } from '../../base';
@@ -11,17 +12,16 @@ const fileRegex = /file:"(.*?)"/g;
 export const fileMoonScraper = makeEmbed({
   id: 'filemoon',
   name: 'Filemoon',
-  rank: 300,
+  rank: 400,
   scrape: async (ctx) => {
     const embedRes = await ctx.proxiedFetcher<string>(ctx.url, {
       headers: {
         referer: ctx.url,
       },
     });
-    const embedHtml = load(embedRes);
-    const evalCode = embedHtml('script').text().match(evalCodeRegex);
+    const evalCode = embedRes.match(evalCodeRegex);
     if (!evalCode) throw new Error('Failed to find eval code');
-    const unpacked = unpack(evalCode[0]);
+    const unpacked = unpack(evalCode[1]);
     const file = fileRegex.exec(unpacked);
     if (!file?.[1]) throw new Error('Failed to find file');
 
@@ -51,7 +51,7 @@ export const fileMoonScraper = makeEmbed({
           id: 'primary',
           type: 'hls',
           playlist: file[1],
-          flags: [],
+          flags: [flags.CORS_ALLOWED],
           captions,
         },
       ],

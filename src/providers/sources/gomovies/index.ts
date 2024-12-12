@@ -2,12 +2,7 @@ import { load } from 'cheerio';
 
 import { flags } from '@/entrypoint/utils/targets';
 import { makeSourcerer } from '@/providers/base';
-import { doodScraper } from '@/providers/embeds/dood';
-import { mixdropScraper } from '@/providers/embeds/mixdrop';
 import { upcloudScraper } from '@/providers/embeds/upcloud';
-import { upstreamScraper } from '@/providers/embeds/upstream';
-import { vidCloudScraper } from '@/providers/embeds/vidcloud';
-import { voeScraper } from '@/providers/embeds/voe';
 import { NotFoundError } from '@/utils/errors';
 
 import { getSource } from './source';
@@ -18,11 +13,12 @@ export const goMoviesScraper = makeSourcerer({
   id: 'gomovies',
   name: 'GOmovies',
   rank: 60,
-  disabled: true,
   flags: [flags.CORS_ALLOWED],
+  disabled: true,
   async scrapeShow(ctx) {
-    const search = await ctx.proxiedFetcher(`/search/${ctx.media.title.replaceAll(/[^a-z0-9A-Z]/g, '-')}`, {
-      method: 'GET',
+    const search = await ctx.proxiedFetcher<string>(`/ajax/search`, {
+      method: 'POST',
+      body: new URLSearchParams({ keyword: ctx.media.title }),
       headers: {
         'X-Requested-With': 'XMLHttpRequest',
       },
@@ -30,12 +26,12 @@ export const goMoviesScraper = makeSourcerer({
     });
 
     const searchPage = load(search);
-    const mediaElements = searchPage('div.film-detail');
+    const mediaElements = searchPage('a.nav-item');
 
     const mediaData = mediaElements.toArray().map((movieEl) => {
-      const name = searchPage(movieEl).find('h2.film-name a')?.text();
-      const year = searchPage(movieEl).find('span.fdi-item:first')?.text();
-      const path = searchPage(movieEl).find('h2.film-name a').attr('href');
+      const name = searchPage(movieEl).find('h3.film-name')?.text();
+      const year = searchPage(movieEl).find('div.film-infor span:first-of-type')?.text();
+      const path = searchPage(movieEl).attr('href');
       return { name, year, path };
     });
 
@@ -93,56 +89,21 @@ export const goMoviesScraper = makeSourcerer({
       },
     });
 
-    const upcloudSource = await getSource(ctx, sources, 'upcloud');
-    const vidcloudSource = await getSource(ctx, sources, 'vidcloud');
-    const voeSource = await getSource(ctx, sources, 'voe');
-    const doodSource = await getSource(ctx, sources, 'doodstream');
-    const upstreamSource = await getSource(ctx, sources, 'upstream');
-    const mixdropSource = await getSource(ctx, sources, 'mixdrop');
-
-    const embeds = [
-      {
-        embedId: upcloudScraper.id,
-        url: upcloudSource?.link,
-      },
-      {
-        embedId: vidCloudScraper.id,
-        url: vidcloudSource?.link,
-      },
-      {
-        embedId: voeScraper.id,
-        url: voeSource?.link,
-      },
-      {
-        embedId: doodScraper.id,
-        url: doodSource?.link,
-      },
-      {
-        embedId: upstreamScraper.id,
-        url: upstreamSource?.link,
-      },
-      {
-        embedId: mixdropScraper.id,
-        url: mixdropSource?.link,
-      },
-    ];
-
-    const filteredEmbeds = embeds
-      .filter((embed) => embed.url)
-      .map((embed) => ({
-        embedId: embed.embedId,
-        url: embed.url as string,
-      }));
-
-    if (filteredEmbeds.length === 0) throw new Error('No valid embeds found.');
+    const upcloudSource = await getSource(ctx, sources);
 
     return {
-      embeds: filteredEmbeds,
+      embeds: [
+        {
+          embedId: upcloudScraper.id,
+          url: upcloudSource.link,
+        },
+      ],
     };
   },
   async scrapeMovie(ctx) {
-    const search = await ctx.proxiedFetcher(`/search/${ctx.media.title.replaceAll(/[^a-z0-9A-Z]/g, '-')}`, {
-      method: 'GET',
+    const search = await ctx.proxiedFetcher<string>(`ajax/search`, {
+      method: 'POST',
+      body: new URLSearchParams({ keyword: ctx.media.title }),
       headers: {
         'X-Requested-With': 'XMLHttpRequest',
       },
@@ -150,12 +111,12 @@ export const goMoviesScraper = makeSourcerer({
     });
 
     const searchPage = load(search);
-    const mediaElements = searchPage('div.film-detail');
+    const mediaElements = searchPage('a.nav-item');
 
     const mediaData = mediaElements.toArray().map((movieEl) => {
-      const name = searchPage(movieEl).find('h2.film-name a')?.text();
-      const year = searchPage(movieEl).find('span.fdi-item:first')?.text();
-      const path = searchPage(movieEl).find('h2.film-name a').attr('href');
+      const name = searchPage(movieEl).find('h3.film-name')?.text();
+      const year = searchPage(movieEl).find('div.film-infor span:first-of-type')?.text();
+      const path = searchPage(movieEl).attr('href');
       return { name, year, path };
     });
 
@@ -175,51 +136,15 @@ export const goMoviesScraper = makeSourcerer({
       baseUrl: gomoviesBase,
     });
 
-    const upcloudSource = await getSource(ctx, sources, 'upcloud');
-    const vidcloudSource = await getSource(ctx, sources, 'vidcloud');
-    const voeSource = await getSource(ctx, sources, 'voe');
-    const doodSource = await getSource(ctx, sources, 'doodstream');
-    const upstreamSource = await getSource(ctx, sources, 'upstream');
-    const mixdropSource = await getSource(ctx, sources, 'mixdrop');
-
-    const embeds = [
-      {
-        embedId: upcloudScraper.id,
-        url: upcloudSource?.link,
-      },
-      {
-        embedId: vidCloudScraper.id,
-        url: vidcloudSource?.link,
-      },
-      {
-        embedId: voeScraper.id,
-        url: voeSource?.link,
-      },
-      {
-        embedId: doodScraper.id,
-        url: doodSource?.link,
-      },
-      {
-        embedId: upstreamScraper.id,
-        url: upstreamSource?.link,
-      },
-      {
-        embedId: mixdropScraper.id,
-        url: mixdropSource?.link,
-      },
-    ];
-
-    const filteredEmbeds = embeds
-      .filter((embed) => embed.url)
-      .map((embed) => ({
-        embedId: embed.embedId,
-        url: embed.url as string,
-      }));
-
-    if (filteredEmbeds.length === 0) throw new Error('No valid embeds found.');
+    const upcloudSource = await getSource(ctx, sources);
 
     return {
-      embeds: filteredEmbeds,
+      embeds: [
+        {
+          embedId: upcloudScraper.id,
+          url: upcloudSource.link,
+        },
+      ],
     };
   },
 });

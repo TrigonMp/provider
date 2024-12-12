@@ -1,27 +1,39 @@
-import { EmbedOutput, makeEmbed } from '@/providers/base';
-import { NotFoundError } from '@/utils/errors';
+import * as unpacker from 'unpacker';
+
+import { flags } from '@/entrypoint/utils/targets';
+import { makeEmbed } from '@/providers/base';
+
+const packedRegex = /(eval\(function\(p,a,c,k,e,d\).*\)\)\))/;
+const linkRegex = /sources:\[{file:"(.*?)"/;
 
 export const upstreamScraper = makeEmbed({
   id: 'upstream',
   name: 'UpStream',
-  rank: 160,
+  rank: 199,
   async scrape(ctx) {
-    let url = ctx.url;
-    if (ctx.url.includes('primewire')) {
-      const request = await ctx.proxiedFetcher.full(ctx.url);
-      url = request.finalUrl;
+    // Example url: https://upstream.to/embed-omscqgn6jc8r.html
+    const streamRes = await ctx.proxiedFetcher<string>(ctx.url);
+    const packed = streamRes.match(packedRegex);
+
+    if (packed) {
+      const unpacked = unpacker.unpack(packed[1]);
+      const link = unpacked.match(linkRegex);
+
+      if (link) {
+        return {
+          stream: [
+            {
+              id: 'primary',
+              type: 'hls',
+              playlist: link[1],
+              flags: [flags.CORS_ALLOWED],
+              captions: [],
+            },
+          ],
+        };
+      }
     }
 
-    const idMatch = url.match(/https:\/\/upstream\.to\/(.+)$/);
-    if (!idMatch) {
-      throw new NotFoundError('Invalid URL format');
-    }
-
-    const videoID = idMatch[1];
-    const vidScrapeURL = `https://upstream.wafflehacker.io/scrape?id=${encodeURIComponent(videoID)}`;
-    ctx.progress(50);
-    const vidScrape = await ctx.fetcher(vidScrapeURL);
-    ctx.progress(100);
-    return vidScrape as EmbedOutput;
+    throw new Error('upstream source not found');
   },
 });

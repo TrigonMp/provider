@@ -1,5 +1,5 @@
+import { flags } from '@/entrypoint/utils/targets';
 import { makeEmbed } from '@/providers/base';
-import { vidsrcRCPBase } from '@/providers/sources/vidsrc/common';
 
 const hlsURLRegex = /file:"(.*?)"/;
 const setPassRegex = /var pass_path = "(.*set_pass\.php.*)";/;
@@ -32,23 +32,20 @@ export const vidsrcembedScraper = makeEmbed({
     if (!finalUrl.includes('.m3u8')) throw new Error('Unable to find HLS playlist');
 
     let setPassLink = html.match(setPassRegex)?.[1];
+    if (!setPassLink) throw new Error('Unable to find set_pass.php link');
 
-    // isn't neeeded, the stream works without it anyway
-    // shouldn't fail if the setpass link is not found
-    if (setPassLink) {
-      if (setPassLink.startsWith('//')) {
-        setPassLink = `https:${setPassLink}`;
-      }
-
-      // VidSrc uses a password endpoint to temporarily whitelist the user's IP. This is called in an interval by the player.
-      // It currently has no effect on the player itself, the content plays fine without it.
-      // In the future we might have to introduce hooks for the frontend to call this endpoint.
-      await ctx.proxiedFetcher(setPassLink, {
-        headers: {
-          referer: ctx.url,
-        },
-      });
+    if (setPassLink.startsWith('//')) {
+      setPassLink = `https:${setPassLink}`;
     }
+
+    // VidSrc uses a password endpoint to temporarily whitelist the user's IP. This is called in an interval by the player.
+    // It currently has no effect on the player itself, the content plays fine without it.
+    // In the future we might have to introduce hooks for the frontend to call this endpoint.
+    await ctx.proxiedFetcher(setPassLink, {
+      headers: {
+        referer: ctx.url,
+      },
+    });
 
     return {
       stream: [
@@ -56,11 +53,7 @@ export const vidsrcembedScraper = makeEmbed({
           id: 'primary',
           type: 'hls',
           playlist: finalUrl,
-          headers: {
-            Referer: vidsrcRCPBase,
-            Origin: vidsrcRCPBase,
-          },
-          flags: [],
+          flags: [flags.CORS_ALLOWED],
           captions: [],
         },
       ],

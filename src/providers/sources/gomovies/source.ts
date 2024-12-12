@@ -1,30 +1,31 @@
 import { load } from 'cheerio';
 
 import { ScrapeContext } from '@/utils/context';
+import { NotFoundError } from '@/utils/errors';
 
 import { gomoviesBase } from '.';
 
-export async function getSource(ctx: ScrapeContext, sources: any, title: string) {
-  const source = load(sources)(`a[title*=${title} i]`);
+export async function getSource(ctx: ScrapeContext, sources: any) {
+  const upcloud = load(sources)('a[title*="upcloud" i]');
 
-  const sourceDataId = source?.attr('data-id') ?? source?.attr('data-linkid');
+  const upcloudDataId = upcloud?.attr('data-id') ?? upcloud?.attr('data-linkid');
 
-  if (!sourceDataId) return undefined;
+  if (!upcloudDataId) throw new NotFoundError('Upcloud source not available');
 
-  const sourceData = await ctx.proxiedFetcher<{
+  const upcloudSource = await ctx.proxiedFetcher<{
     type: 'iframe' | string;
     link: string;
     sources: [];
     title: string;
     tracks: [];
-  }>(`/ajax/sources/${sourceDataId}`, {
+  }>(`/ajax/sources/${upcloudDataId}`, {
     headers: {
       'X-Requested-With': 'XMLHttpRequest',
     },
     baseUrl: gomoviesBase,
   });
 
-  if (!sourceData.link || sourceData.type !== 'iframe') return undefined;
+  if (!upcloudSource.link || upcloudSource.type !== 'iframe') throw new NotFoundError('No upcloud stream found');
 
-  return sourceData;
+  return upcloudSource;
 }

@@ -48,25 +48,22 @@ export const closeLoadScraper = makeEmbed({
       .html();
     if (!evalCode) throw new Error("Couldn't find eval code");
     const decoded = unpack(evalCode);
-    // eslint-disable-next-line no-useless-escape
-    const base64UrlPattern = /"(aHR0c[0-9a-zA-Z\+\/\=]+)"/;
-    const match = base64UrlPattern.exec(decoded);
-    if (!match || !match[1]) {
-      // Make sure there's a match and it includes the first group.
-      throw new NotFoundError('Unable to find source url');
-    }
-    const base64Url = match[1]; // This is your base64-encoded URL.
-    const url = atob(base64Url); // Decode the base64 string to get the actual URL.
-    const proxiedUrl = `https://m3u8.wafflehacker.io/m3u8-proxy?url=${encodeURIComponent(url)}&headers=%7B%22referer%22%3A%20%22https%3A%2F%2Fcloseload.top%2F%22%2C%20%22origin%22
-%3A%20%22https%3A%2F%2Fcloseload.top%22%7D`;
+    const regexPattern = /var\s+(\w+)\s*=\s*"([^"]+)";/g;
+    const base64EncodedUrl = regexPattern.exec(decoded)?.[2];
+    if (!base64EncodedUrl) throw new NotFoundError('Unable to find source url');
+    const url = atob(base64EncodedUrl);
     return {
       stream: [
         {
           id: 'primary',
           type: 'hls',
-          playlist: proxiedUrl,
+          playlist: url,
           captions,
-          flags: [flags.CORS_ALLOWED],
+          flags: [flags.IP_LOCKED],
+          headers: {
+            Referer: 'https://closeload.top/',
+            Origin: 'https://closeload.top',
+          },
         },
       ],
     };

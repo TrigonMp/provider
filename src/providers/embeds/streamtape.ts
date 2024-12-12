@@ -1,28 +1,39 @@
-import { EmbedOutput, makeEmbed } from '@/providers/base';
-import { NotFoundError } from '@/utils/errors';
+import { flags } from '@/entrypoint/utils/targets';
+import { makeEmbed } from '@/providers/base';
 
-export const streamTapeScraper = makeEmbed({
+export const streamtapeScraper = makeEmbed({
   id: 'streamtape',
-  name: 'StreamTape',
-  rank: 199,
+  name: 'Streamtape',
+  rank: 160,
   async scrape(ctx) {
-    let url = ctx.url;
-    if (ctx.url.includes('primewire')) {
-      const request = await ctx.proxiedFetcher.full(ctx.url);
-      url = request.finalUrl;
-    }
-    ctx.progress(25);
-    // Match the URL pattern for streamtape.com/v/[videoID]/[optionalSuffix]
-    const idMatch = url.match(/https?:\/\/streamtape\.com\/v\/([^/]+)\/?.*/);
-    if (!idMatch) {
-      throw new NotFoundError('Invalid URL format');
-    }
+    const embed = await ctx.proxiedFetcher<string>(ctx.url);
 
-    const videoID = idMatch[1];
-    const vidScrapeURL = `https://streamscrape.wafflehacker.io/scrape?id=${encodeURIComponent(videoID)}`;
-    ctx.progress(50);
-    const vidScrape = await ctx.fetcher(vidScrapeURL);
-    ctx.progress(100);
-    return vidScrape as EmbedOutput;
+    const match = embed.match(/robotlink'\).innerHTML = (.*)'/);
+    if (!match) throw new Error('No match found');
+
+    const [fh, sh] = match?.[1]?.split("+ ('") ?? [];
+    if (!fh || !sh) throw new Error('No match found');
+
+    const url = `https:${fh?.replace(/'/g, '').trim()}${sh?.substring(3).trim()}`;
+
+    return {
+      stream: [
+        {
+          id: 'primary',
+          type: 'file',
+          flags: [flags.CORS_ALLOWED, flags.IP_LOCKED],
+          captions: [],
+          qualities: {
+            unknown: {
+              type: 'mp4',
+              url,
+            },
+          },
+          headers: {
+            Referer: 'https://streamtape.com',
+          },
+        },
+      ],
+    };
   },
 });
