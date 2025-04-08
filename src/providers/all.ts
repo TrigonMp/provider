@@ -25,12 +25,15 @@ import { goMoviesScraper } from '@/providers/sources/gomovies/index';
 import { insertunitScraper } from '@/providers/sources/insertunit';
 import { kissAsianScraper } from '@/providers/sources/kissasian/index';
 import { lookmovieScraper } from '@/providers/sources/lookmovie';
+import { mp4hydraScraper } from '@/providers/sources/mp4hydra';
 import { nsbxScraper } from '@/providers/sources/nsbx';
 import { redStarScraper } from '@/providers/sources/redstar';
 import { remotestreamScraper } from '@/providers/sources/remotestream';
 import { showboxScraper } from '@/providers/sources/showbox/index';
+import { TASFScraper } from '@/providers/sources/theyallsayflix';
 import { tugaflixScraper } from '@/providers/sources/tugaflix';
 import { vidsrcScraper } from '@/providers/sources/vidsrc/index';
+import { vidsrcsuScraper } from '@/providers/sources/vidsrcsu';
 import { whvxScraper } from '@/providers/sources/whvx';
 import { zoechipScraper } from '@/providers/sources/zoechip';
 
@@ -46,6 +49,7 @@ import { closeLoadScraper } from './embeds/closeload';
 import { fileMoonScraper } from './embeds/filemoon';
 import { fileMoonMp4Scraper } from './embeds/filemoon/mp4';
 import { hydraxScraper } from './embeds/hydrax';
+import { mp4hydraServer1Scraper, mp4hydraServer2Scraper } from './embeds/mp4hydra';
 import { alphaScraper, deltaScraper } from './embeds/nsbx';
 import { playm4uNMScraper } from './embeds/playm4u/nm';
 import { ridooScraper } from './embeds/ridoo';
@@ -104,6 +108,9 @@ export function gatherAllSources(): Array<Sourcerer> {
     fsharetvScraper,
     redStarScraper,
     bombtheirishScraper,
+    vidsrcsuScraper,
+    TASFScraper,
+    mp4hydraScraper,
   ];
 }
 
@@ -153,5 +160,7 @@ export function gatherAllEmbeds(): Array<Embed> {
     astraScraper,
     orionScraper,
     streamwishScraper,
+    mp4hydraServer1Scraper,
+    mp4hydraServer2Scraper,
   ];
 }

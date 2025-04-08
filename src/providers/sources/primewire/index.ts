@@ -80,7 +80,7 @@ async function getStreams(title: string) {
 export const primewireScraper = makeSourcerer({
   id: 'primewire',
   name: 'Primewire',
-  rank: 1,
+  rank: 10,
   disabled: true,
   flags: [flags.CORS_ALLOWED],
   async scrapeMovie(ctx) {

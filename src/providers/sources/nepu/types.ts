@@ -3,6 +3,6 @@ export type SearchResults = {
     id: number;
     name: string;
     url: string;
-    type: 'Movie' | 'Serie';
+    type: 'Movie' | 'Show';
   }[];
 };

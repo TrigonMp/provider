@@ -113,6 +113,7 @@ const universalScraper = async (ctx: MovieScrapeContext | ShowScrapeContext) => 
 
   for (const source of sources) {
     let embedId;
+
     if (source.name === 'm')
       embedId = 'playm4u-m'; // TODO
     else if (source.name === 'nm') embedId = 'playm4u-nm';
@@ -149,7 +150,8 @@ const universalScraper = async (ctx: MovieScrapeContext | ShowScrapeContext) => 
 export const m4uScraper = makeSourcerer({
   id: 'm4ufree',
   name: 'M4UFree',
-  rank: 125,
+  rank: 200,
+  disabled: true,
   flags: [],
   scrapeMovie: universalScraper,
   scrapeShow: universalScraper,

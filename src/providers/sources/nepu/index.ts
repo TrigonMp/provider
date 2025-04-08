@@ -1,14 +1,14 @@
 import { load } from 'cheerio';
 
 import { SourcererOutput, makeSourcerer } from '@/providers/base';
-import { compareTitle } from '@/utils/compare';
+import { compareMedia } from '@/utils/compare';
 import { MovieScrapeContext, ShowScrapeContext } from '@/utils/context';
 import { NotFoundError } from '@/utils/errors';
 
 import { SearchResults } from './types';
 
-const nepuBase = 'https://nepu.io';
-const nepuReferer = 'https://nepu.to';
+const nepuBase = 'https://rar.to';
+const nepuReferer = 'https://rar.to/';
 
 const universalScraper = async (ctx: MovieScrapeContext | ShowScrapeContext) => {
   const searchResultRequest = await ctx.proxiedFetcher<string>('/ajax/posts', {
@@ -24,9 +24,10 @@ const universalScraper = async (ctx: MovieScrapeContext | ShowScrapeContext) => 
   const show = searchResult.data.find((item) => {
     if (!item) return false;
     if (ctx.media.type === 'movie' && item.type !== 'Movie') return false;
-    if (ctx.media.type === 'show' && item.type !== 'Serie') return false;
+    if (ctx.media.type === 'show' && item.type !== 'Show') return false;
 
-    return compareTitle(ctx.media.title, item.name);
+    const [, title, year] = item.name.match(/^(.*?)\s*(?:\(?\s*(\d{4})(?:\s*-\s*\d{0,4})?\s*\)?)?\s*$/) || [];
+    return compareMedia(ctx.media, title, Number(year));
   });
 
   if (!show) throw new NotFoundError('No watchable item found');
@@ -51,9 +52,9 @@ const universalScraper = async (ctx: MovieScrapeContext | ShowScrapeContext) => 
     body: new URLSearchParams({ id: embedId }),
   });
 
-  const streamUrl = playerPage.match(/"file":"(http[^"]+)"/);
+  const streamUrl = playerPage.match(/"file":"([^"]+)"/);
 
-  if (!streamUrl) throw new NotFoundError('No stream found.');
+  if (!streamUrl?.[1]) throw new NotFoundError('No stream found.');
 
   return {
     embeds: [],
@@ -61,11 +62,11 @@ const universalScraper = async (ctx: MovieScrapeContext | ShowScrapeContext) => 
       {
         id: 'primary',
         captions: [],
-        playlist: streamUrl[1],
+        playlist: nepuBase + streamUrl[1],
         type: 'hls',
         headers: {
-          Origin: nepuReferer,
-          Referer: `${nepuReferer}/`,
+          Origin: nepuBase,
+          Referer: nepuReferer,
         },
         flags: [],
       },
@@ -76,8 +77,8 @@ const universalScraper = async (ctx: MovieScrapeContext | ShowScrapeContext) => 
 export const nepuScraper = makeSourcerer({
   id: 'nepu',
   name: 'Nepu',
-  rank: 80,
   disabled: true,
+  rank: 210,
   flags: [],
   scrapeMovie: universalScraper,
   scrapeShow: universalScraper,

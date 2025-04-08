@@ -22,7 +22,7 @@ async function universalScraper(ctx: ShowScrapeContext | MovieScrapeContext): Pr
 export const goojaraScraper = makeSourcerer({
   id: 'goojara',
   name: 'Goojara',
-  rank: 70,
+  rank: 180,
   flags: [],
   disabled: true,
   scrapeShow: universalScraper,

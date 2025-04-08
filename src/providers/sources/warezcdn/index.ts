@@ -1,4 +1,3 @@
-import { flags } from '@/entrypoint/utils/targets';
 import { SourcererEmbed, SourcererOutput, makeSourcerer } from '@/providers/base';
 import { mixdropScraper } from '@/providers/embeds/mixdrop';
 import { warezcdnembedHlsScraper } from '@/providers/embeds/warezcdn/hls';
@@ -48,8 +47,8 @@ async function getEmbeds(id: string, servers: string, ctx: ScrapeContext): Promi
 export const warezcdnScraper = makeSourcerer({
   id: 'warezcdn',
   name: 'WarezCDN',
-  rank: 81,
-  flags: [flags.CORS_ALLOWED],
+  rank: 140,
+  flags: [],
   scrapeMovie: async (ctx) => {
     if (!ctx.media.imdbId) throw new NotFoundError('This source requires IMDB id.');
     const serversPage = await ctx.proxiedFetcher<string>(`/filme/${ctx.media.imdbId}`, {

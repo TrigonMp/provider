@@ -9,7 +9,7 @@ import { NotFoundError } from '@/utils/errors';
 export const flixhqScraper = makeSourcerer({
   id: 'flixhq',
   name: 'FlixHQ',
-  rank: 61,
+  rank: 230,
   flags: [flags.CORS_ALLOWED],
   disabled: true,
   async scrapeMovie(ctx) {

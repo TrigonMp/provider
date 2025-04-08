@@ -36,7 +36,7 @@ async function comboScraper(ctx: ShowScrapeContext | MovieScrapeContext): Promis
 export const nsbxScraper = makeSourcerer({
   id: 'nsbx',
   name: 'NSBX',
-  rank: 129,
+  rank: 290,
   flags: [flags.CORS_ALLOWED],
   disabled: true,
   externalSource: true,

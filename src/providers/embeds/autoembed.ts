@@ -9,25 +9,33 @@ const providers = [
   {
     id: 'autoembed-hindi',
     rank: 9,
+    disabled: true,
   },
   {
     id: 'autoembed-tamil',
     rank: 8,
+    disabled: true,
   },
   {
     id: 'autoembed-telugu',
     rank: 7,
+    disabled: true,
   },
   {
     id: 'autoembed-bengali',
     rank: 6,
+    disabled: true,
   },
 ];
 
-function embed(provider: { id: string; rank: number }) {
+function embed(provider: { id: string; rank: number; disabled?: boolean }) {
   return makeEmbed({
     id: provider.id,
-    name: provider.id.charAt(0).toUpperCase() + provider.id.slice(1),
+    name: provider.id
+      .split('-')
+      .map((word) => word[0].toUpperCase() + word.slice(1))
+      .join(' '),
+    disabled: provider.disabled,
     rank: provider.rank,
     async scrape(ctx) {
       return {

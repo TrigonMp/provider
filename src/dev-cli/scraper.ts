@@ -95,6 +95,7 @@ async function runActualScraping(
 
   if (source.type === 'embed') {
     return providers.runEmbedScraper({
+      disableOpensubtitles: true,
       url: options.url,
       id: source.id,
     });
@@ -110,6 +111,7 @@ async function runActualScraping(
     }
 
     return providers.runSourceScraper({
+      disableOpensubtitles: true,
       media,
       id: source.id,
     });
